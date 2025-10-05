@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>AF_DealerScorecard_Page</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Scorecard URL base</shortDescription>
+        <value></value>
+    </labels>
+    <labels>
+        <fullName>AF_DealerSummary_Page</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Summary URL base</shortDescription>
+        <value></value>
+    </labels>
+    <labels>
+        <fullName>DPS_360_Data_Entry_RecordType_Id</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>DPS 360 Data Entry RecordType Id</shortDescription>
+        <value></value>
+    </labels>
+</CustomLabels>

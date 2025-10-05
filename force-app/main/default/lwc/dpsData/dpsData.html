@@ -1,0 +1,64 @@
+<template>
+    <lightning-card title="SmartAuction Reports" if:true={data.showSA}>
+        <div class="slds-p-horizontal_medium slds-p-vertical_small">
+            <p><b>Account:</b> {data.account.Ally_Primary_Dealer_Number__c} - {data.account.Name}</p>
+            <p><b>SmartAuction Id:</b> {data.smartAuctionId}</p>
+            <div class="slds-m-top_small slds-grid slds-gutters">
+                <div>
+                    <lightning-button variant="base" label="Dealer Scorecard Report" onclick={openScorecard}></lightning-button>
+                </div>
+                <div>
+                    <lightning-button variant="base" label="Dealer Summary Report" onclick={openSummary}></lightning-button>
+                </div>
+            </div>
+        </div>
+    </lightning-card>
+
+    <lightning-card title="Select BAC - MAKE" if:true={data.showBAC} class="slds-m-top_small">
+        <div class="slds-p-horizontal_medium slds-p-vertical_small slds-grid slds-gutters">
+            <div class="slds-col">
+                <lightning-combobox name="bac" label="BAC" value={selectedBAC} options={bacOptions} onchange={handleBacChange}></lightning-combobox>
+            </div>
+            <div class="slds-col">
+                <lightning-button label="Go" variant="brand" onclick={handleGo}></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+
+    <lightning-card title="DP&S Data" if:true={data.showDPS} class="slds-m-top_small">
+        <div class="slds-p-horizontal_medium slds-p-vertical_small">
+            <p><b>F&amp;I Relationship:</b> {data.dpsAccount.F_I_Relationship_c__c}</p>
+        </div>
+    </lightning-card>
+
+    <lightning-card title="DP&S Product Details" if:true={data.showDPS} class="slds-m-top_small">
+        <div class="slds-p-horizontal_medium slds-p-vertical_small" style="max-height: 250px; overflow: auto;">
+            <lightning-datatable key-field="id" data={oppsTable} columns={oppsColumns} hide-checkbox-column>
+            </lightning-datatable>
+        </div>
+    </lightning-card>
+
+    <lightning-card title="DP&S Contacts" if:true={data.showDPS} class="slds-m-top_small">
+        <div class="slds-p-horizontal_medium slds-p-vertical_small" style="max-height: 250px; overflow: auto;">
+            <lightning-datatable key-field="Id" data={contacts} columns={contactColumns} hide-checkbox-column>
+            </lightning-datatable>
+        </div>
+    </lightning-card>
+
+    <lightning-card title="F&amp;I Report" if:true={data.showDPS} class="slds-m-top_small">
+        <div class="slds-p-horizontal_medium slds-p-vertical_small">
+            <div class="fi-grid">
+                <div class="fi-cell"></div>
+                <template for:each={monthLabels} for:item="m">
+                    <div key={m} class="fi-cell fi-month"><b>{m}</b></div>
+                </template>
+                <template for:each={fiSections} for:item="row">
+                    <div key={row.label} class="fi-cell fi-label"><b>{row.label}</b></div>
+                    <template for:each={row.values} for:item="val" for:index="index">
+                        <div key={row.label+index} class="fi-cell">{val}</div>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>
