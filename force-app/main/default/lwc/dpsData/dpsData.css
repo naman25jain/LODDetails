@@ -1,0 +1,4 @@
+.fi-grid { display: grid; grid-template-columns: repeat(13, minmax(80px, auto)); grid-gap: 8px; align-items: end; }
+.fi-cell { padding: 4px; border-bottom: 1px solid #e5e5e5; }
+.fi-label { font-weight: 600; }
+.fi-month { text-align: right; }
