@@ -1,0 +1,1342 @@
+<apex:page controller="AF_DPSData" sidebar="false">
+  
+    <apex:form >
+     
+       
+    <apex:pageBlock id="pgBlk1" title="" mode="edit" rendered="{!showSA}">
+            <apex:pageBlockSection columns="1" collapsible="false" title="Account Details: {!ac.Ally_Primary_Dealer_Number__c} - {!ac.Name}" rendered="{!showSA}"> 
+              <!--<apex:outputText ><b>PDN/Name:</b> {!ac.Ally_Primary_Dealer_Number__c}/{!ac.Name}</apex:outputText>-->
+           </apex:pageBlockSection>
+        
+        <div style="text-align:center;font-size: 20px;"><apex:outputText style="font-weight: bold;" value="SmartAuction Reports"/> </div>
+         <apex:pageBlockSection columns="2" collapsible="false" title="SmartAuction Details" rendered="{!showSA}"> 
+
+            <apex:outputText value="SmartAuction Id : {0,number,######0}" id="saId" >
+                <apex:param value="{!ac.Smart_Auction_Id__c}" />
+            </apex:outputText>
+
+            <!--<apex:outputText value="Finance Source : {!ac.Finance_Sources__c}" id="fs" />-->
+         
+            <apex:commandLink target="_blank" value="Dealer Scorecard Report" action="{!saReports}">
+                 <apex:param name="said" value="{!ac.Smart_Auction_Id__c}"  assignTo="{!said}"/>
+                 <apex:param name="rptType" value="Scorecard" assignTo="{!rptType}"/>
+            </apex:commandLink>
+
+            <apex:commandLink target="_blank" value="Dealer Summary Report" action="{!saReports}">
+                 <apex:param name="said" value="{!ac.Smart_Auction_Id__c}"  assignTo="{!said}"/>
+                 <apex:param name="rptType" value="Summary" assignTo="{!rptType}"/>
+            </apex:commandLink>
+
+         </apex:pageBlockSection>
+    </apex:pageBlock>
+    
+    
+    <apex:pageBlock id="make123" title="" mode="edit" rendered="{!showBAC}">
+        <apex:pageBlockSection title="Select BAC - MAKE" collapsible="false" columns="2" rendered="{!showBAC}">
+            <apex:pageBlockSectionItem >
+            <apex:outputPanel rendered="{!showBAC}">
+                <!--<apex:outputLabel >Select Bac Make</apex:outputLabel>-->
+                <apex:selectList id="comProfileList" value="{!selectedValue}" required="true" size="1" title="Competing Lender" multiselect="false">
+                    <apex:selectOptions value="{!BACMakes}"/>
+                </apex:selectList>
+            </apex:outputPanel>
+            <apex:commandButton value="Go!"  action="{!changeRec}" reRender="pgBlk2,opportuntiy,contact,fireport"/>
+           </apex:pageBlockSectionItem>
+           <!-- <apex:pageBlockSectionItem >
+                <apex:commandButton value="Go!"  action="{!changeRec}" reRender="pgBlk2,opportuntiy,contactfireport"/>
+                <apex:outputText></apex:outputText>
+            </apex:pageBlockSectionItem>-->
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+    
+     <apex:pageBlock id="pgBlk2" title="" mode="edit" rendered="{!showDPS}">
+        <div style="text-align:center;font-size: 20px;"><apex:outputText style="font-weight: bold;" value="DP&S Data"/> </div>
+         <apex:pageBlockSection columns="1" collapsible="false" title="DP&S F&I Relationship"> 
+            <apex:outputText ><b>F&amp;I Relationship:</b> {!acx.F_I_Relationship_c__c}</apex:outputText>
+         </apex:pageBlockSection>
+    </apex:pageBlock>  
+      
+    <apex:pageBlock id="opportuntiy" mode="edit" rendered="{!showDPS}" >
+        
+            <apex:pageBlockSection columns="1" collapsible="false" title="DP&S Product Details">
+              <apex:outputPanel id="opanel" layout="block" style="overflow:auto; height:250px;">
+                <apex:pageBlockTable value="{!dpsOpList}" var="op" width="100%" columns="5" id="opportunityId">
+                    <apex:column headerValue="Product Type" value="{!op.producttype}">
+                    </apex:column>
+                    <apex:column headerValue="Product" value="{!op.product}">
+                    </apex:column>
+                    <!--<apex:column headerValue="Enroll/Close Date" value="{!op.enrollDate}">
+                    </apex:column>-->
+                    <apex:column headerValue="Enroll/Close Date" >
+                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">   
+                            <apex:param value="{!op.enrollDate}" /> 
+                        </apex:outputText>  
+                    </apex:column>
+                    <apex:column headerValue="Product Expiration Date" >
+                        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">   
+                            <apex:param value="{!op.expDate}" />    
+                        </apex:outputText>  
+                    </apex:column>
+                    
+                    <!--<apex:column headerValue="Product Expiration Date" value="{!op.expDate}">
+                    </apex:column >
+                    <apex:column headerValue="Product Expiration Date" value="{!op.expDate}">
+                    </apex:column>-->
+                    <apex:column headerValue="Enrolled Indicator">
+                        <apex:image value="{!IF(op.expind=='Unchecked','/img/checkbox_unchecked.gif','/img/checkbox_checked.gif')}" />
+                    </apex:column>
+                    <!--<apex:column headerValue="Expiration Ind" rendered="{!IF(op.expind=='Checked',true,false)}">
+                        <apex:image value="/img/checkbox_checked.gif" />
+                    </apex:column>-->   
+                </apex:pageBlockTable>
+                </apex:outputpanel> 
+            </apex:pageBlockSection>
+             
+    </apex:pageBlock>   
+    
+    <apex:pageBlock id="contact" mode="edit" rendered="{!showDPS}">
+        
+            <apex:pageBlockSection columns="1" collapsible="false" title="DP&S Contacts">
+              <apex:outputPanel id="ctpanel" layout="block" style="overflow:auto; height:250px;">
+                <apex:pageBlockTable value="{!ctx}" var="ct" width="100%" columns="4" id="opportunityId">
+                    <apex:column headerValue="Name" value="{!ct.Name__c}">
+                    </apex:column>
+                    <apex:column headerValue="Contact Role" value="{!ct.Contact_Title_c__c}">
+                    </apex:column>
+                    <apex:column headerValue="Email" value="{!ct.Email__c}">
+                    </apex:column>
+                    <apex:column headerValue="Phone Number" value="{!ct.Phone__c}">
+                    </apex:column>
+                  
+                </apex:pageBlockTable>
+                </apex:outputpanel>  
+            </apex:pageBlockSection>
+            
+    </apex:pageBlock>   
+    
+    <apex:pageBlock id="fireport" mode="edit" rendered="{!showDPS}">
+     <apex:pageBlockSection columns="1" collapsible="false" title="F&I Report">
+      <apex:outputPanel id="firep" layout="block" style="overflow:auto; height:auto">
+        <apex:panelGrid columns="13" style="border-bottom: hidden;font-family: Arial Unicode MS; font-size:12px; color=grey;text-align:right" width="100%" border="0" cellspacing="10">
+            <apex:outputText />
+            <apex:outputText ><b>{!firstMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!secondMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!thirdMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!fourthMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!fifthMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!sixthMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!seventhMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!eighthMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!ninthMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!tenthMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!eleventhMonth}</b></apex:outputText>
+            <apex:outputText ><b>{!twelvthMonth}</b></apex:outputText>
+            
+            <apex:outputText ><b>Adjusted RVS Net of Ally Leases</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_1st_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_1st_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_2nd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_2nd_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_3rd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_3rd_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_4th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_4th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_5th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_5th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_6th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_6th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_7th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_7th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_8th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_8th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_9th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_9th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_10th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_10th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_11th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_11th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.New_Adj_RVS_12th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.New_Adj_RVS_12th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+        
+        
+            <apex:outputText ><b>Total CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_1st_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_1st_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_2nd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_2nd_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_3rd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_3rd_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_4th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_4th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_5th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_5th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_6th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_6th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_7th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_7th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_8th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_8th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_9th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_9th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_10th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_10th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_11th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_11th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_CM_12th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_CM_12th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Total F&amp;I Revenue $</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_1st_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_1st_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_2nd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_2nd_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_3rd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_3rd_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_4th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_4th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_5th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_5th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_6th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_6th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_7th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_7th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_8th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_8th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_9th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_9th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_10th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_10th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_11th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_11th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Total_Revenue_12th_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"/>
+            <apex:outputText value="{!selectedCoachingReport.Total_Revenue_12th_c__c}" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>PVR Goal $</b></apex:outputText>
+            <apex:outputText >{!DDPVRGoalFirst}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalSecond}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalThird}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalFourth}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalFifth}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalSixth}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalSeventh}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalEighth}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalNinth}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalTenth}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalEleventh}</apex:outputText>
+            <apex:outputText >{!DDPVRGoalTwelveth}</apex:outputText>
+            
+            <apex:outputText ><b>PVR Current</b></apex:outputText>
+            <apex:outputText >{!DDPVRActualFirst}</apex:outputText>
+            <apex:outputText >{!DDPVRActualSecond}</apex:outputText>
+            <apex:outputText >{!DDPVRActualThird}</apex:outputText>
+            <apex:outputText >{!DDPVRActualFourth}</apex:outputText>
+            <apex:outputText >{!DDPVRActualFifth}</apex:outputText>
+            <apex:outputText >{!DDPVRActualSixth}</apex:outputText>
+            <apex:outputText >{!DDPVRActualSeventh}</apex:outputText>
+            <apex:outputText >{!DDPVRActualEighth}</apex:outputText>
+            <apex:outputText >{!DDPVRActualNinth}</apex:outputText>
+            <apex:outputText >{!DDPVRActualTenth}</apex:outputText>
+            <apex:outputText >{!DDPVRActualEleventh}</apex:outputText>
+            <apex:outputText >{!DDPVRActualTwelveth}</apex:outputText>
+            
+            <apex:outputText ><b>360 Data Entry Date</b></apex:outputText>
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                 <apex:param value="{!DDFirst}"/>
+            </apex:outputText>
+            
+             <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                    <apex:param value="{!DDSecond}"/>
+                </apex:outputText>
+                
+             <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" >
+                    <apex:param value="{!DDThird}"/>
+                </apex:outputText>
+                
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                    <apex:param value="{!DDFourth}"/>
+                </apex:outputText>
+                
+             <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                    <apex:param value="{!DDFifth}"/>
+                </apex:outputText>
+                
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                    <apex:param value="{!DDsixth}"/>
+            </apex:outputText>
+                
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                    <apex:param value="{!DDSeventh}"/>
+            </apex:outputText>
+                
+             <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                <apex:param value="{!DDEighth}"/>
+            </apex:outputText>
+                
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                <apex:param value="{!DDNinth}"/>
+            </apex:outputText>
+                
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                <apex:param value="{!DDTenth}" />
+            </apex:outputText>
+              
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                    <apex:param value="{!DDEleventh}" />
+            </apex:outputText>
+                
+            <apex:outputText value="{0,date,MM'/'dd'/'yyyy}">
+                <apex:param value="{!DDTwelveth}" />
+            </apex:outputText>
+            
+                
+            <apex:outputText ><b>Ally Premier Protection (APP) New CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_3rd_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+            <apex:outputText ><b>Ally Premier Protection (APP) New #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_New_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Ally Premier Protection (APP) Used CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Ally Premier Protection (APP) Used #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.APP_Used_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Ally GAP CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Ally GAP #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Ally_GAP_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GMPP New CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GMPP New #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>New Adjusted Pen% Net of Ally Leases</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_1st_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_2nd_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_3rd_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_4th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_5th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_6th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_7th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_8th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_9th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_10th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_11th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_New_12th_Pen_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GMPP Used CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GMPP Used #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GMPP_Used_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>MRP Used 3/3 CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>MRP Used 3/3 #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.MRP_Used_3_3_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>RA CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+            <apex:outputText ><b>RA New#</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_New_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>RA Used #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.RA_Used_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>V1 CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.V1_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>V1 #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.V1_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>VMC Total CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_10_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>VMC Total #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.VMC_Total_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GCA CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GCA_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GCA #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GCA_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GCA_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GAP CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GAP_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>GAP #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.GAP_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.GAP_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+            <apex:outputText ><b>T&amp;WP CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>T&amp;WP #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.T_WP_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Phantom Footprints CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Phantom Footprints #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Data_Dots_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Etch CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Etch_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+            <apex:outputText ><b>Etch #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Etch_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Etch_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Appear Protect CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Appear Protect #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Appear_Protect_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+            <apex:outputText ><b>SMLP CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>SMLP #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.SMLP_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Dent CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Dent_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>Dent #</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.Dent_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.Dent_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>V1 GAP CM$</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_1st_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_2nd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_3rd_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_4th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_5th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_6th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_7th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_8th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_9th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_10th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_11th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_12th_Rev_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            <apex:outputText ><b>V1 GAP#</b></apex:outputText>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_1st_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_2nd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_3rd_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_4th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_5th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_6th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_7th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_8th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_9th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_10th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_11th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            <apex:outputField value="{!selectedCoachingReport.V1_GAP_12th_Count_c__c}" rendered="{!NOT(ISNULL(selectedCoachingReport))}"></apex:outputField>
+            <apex:outputText value="" rendered="{!ISNULL(selectedCoachingReport)}"/>
+            
+            
+        </apex:panelGrid> 
+        </apex:outputPanel>
+    </apex:pageBlockSection>
+    </apex:pageBlock>   
+
+    
+      </apex:form>
+</apex:page>
